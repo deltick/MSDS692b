@@ -13,7 +13,7 @@ TestV1 <- read_csv("C:/Users/John/Desktop/USBPTS.csv")
 t1 <- select(TestV1, xDate, "Southwest Border")
 
 t1 <- rename(t1, date=xDate)
-t1 <- rename(t1, value=count)
+t1 <- rename(t1, value="Southwest Border")
 
 interactive <- FALSE
 
@@ -110,5 +110,6 @@ refit_tbl %>%
 
 
 ########################################################################################
+
 
 
