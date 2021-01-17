@@ -374,13 +374,120 @@ combinedV2$`Monthly Total`     <- as.numeric(gsub(",", "", combinedV2$`Monthly T
 
 write_csv(combinedV2, "c:/users/john/desktop/USBPTS.csv", append = FALSE, col_names = TRUE)
 
+#############################################################################################
 
-# t1 <- select(combined, fiscalYear, SECTOR, "Southwest Border")
-# t1$SWB <- as.numeric(gsub(",", "", t1$`Southwest Border`))
+tsCombined <- read_csv("c:/users/john/desktop/USBPTS.csv")
+
+
+t1 <- select(tsCombined, fiscalYear, xMonthN, "Southwest Border")
+t2 <- select(tsCombined, xDate, "Southwest Border")
+
+
+t1TS <- ts(t1$`Southwest Border`, start = c(2000, 1), frequency = 12)
 # 
-# t1TS <- ts(t1$SWB, start = c(2000, 1), frequency = 12)
-# 
-# autoplot(t1TS)
-# 
-# summary(t1)
+autoplot(t1TS)
+
+# library(tsoutliers)
+# outliers_ts <- tso(t1TS, types = c("TC", "AO", "LS", "IO"))
+# outliers_ts$outliers
+# ou<- tso(t1TS) 
+# plot(ou)
+
+timeseriescomponents <- decompose(t1TS)
+plot(timeseriescomponents)
+
+tsCombined$fiscalYear <- as.factor(tsCombined$fiscalYear)
+
+
+eqts <- t1TS
+
+library(tseries)
+tseries::adf.test(eqts, k = 0)
+tseries::kpss.test(eqts, null = "Trend")
+tseries::kpss.test(eqts, null = "Level")
+
+acf(ts(((eqts))),main='ACF')
+pacf(ts(((eqts))),main='PACF')
+
+hist(t1TS)
+hist(diff(t1TS))
+
+
+library(TSstudio)
+ts_info(eqts)
+
+ts_plot(eqts)
+
+ts_decompose(eqts)
+
+eqts_detrend <- eqts - decompose(eqts)$trend
+
+ts_lags(eqts, lags=c(12,24))
+
+ts_seasonal(eqts_detrend, type="box")
+
+library(prophet)
+library(readxl)
+
+library(readxl)
+library(TTR)
+library(fpp2)
+library(TSstudio)
+library(xts)
+library(tseries)
+library(forecast)
+library(ggplot2)
+library(tidyverse)
+library(astsa)
+
+
+AR1 = auto.arima(t1TS, approximation=FALSE,trace=FALSE)
+summary(AR1)
+
+res <- resid(AR1)
+Box.test(res, type=  "Box-Pierce" , lag = 12, fitdf = 2)
+forecast::checkresiduals(AR1)
+
+x1 <- (AR1$x)
+x2 <- (AR1$fitted)
+
+library(ggplot2)
+
+x1df <- data.frame(Y=as.matrix(x1), date=time(x1))
+x2df <- data.frame(Y=as.matrix(x2), date=time(x2))
+
+p = ggplot() + 
+  geom_line(data = x1df, aes(x = date, y = Y), color = "blue") +
+  geom_line(data = x2df, aes(x = date, y = Y), color = "red") +
+  xlab('Date') +
+  ylab('Forecast vs Actual')
+
+print(p)
+
+#plot(forecast(AR1,12))
+
+
+names(t2) <- c('ds', 'y') 
+
+m <- prophet(t2)
+
+future <- make_future_dataframe(m, periods=12)
+
+forecast <- predict(m, future)
+tail(forecast)
+
+plot(m, forecast)
+
+prophet_plot_components(m, forecast)
+
+df.cv <- cross_validation(m, initial=180, period=60, horizon=120, units='days')
+tail(df.cv)
+
+plot_cross_validation_metric(df.cv, metric = 'mape')
+
+
+#cutoffs <- seq.Date(from=as.Date('2019-01-01'), to=as.Date('2020-01-01'), by="month")
+#model_cv <- cross_validation(m, cutoffs=cutoffs, horizon=32, units="days")
+
+
 
