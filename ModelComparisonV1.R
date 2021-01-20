@@ -112,4 +112,26 @@ refit_tbl %>%
 ########################################################################################
 
 
+fcast <- refit_tbl %>%
+  modeltime_forecast(h = "3 years", actual_data = m750) # %>%
+  plot_modeltime_forecast(
+    .legend_max_width = 25, # For mobile screens
+    .interactive      = interactive
+  )
+
+dt <-fcast$data$.index
+y <- fcast$data$.value
+
+fcastTS <- ts(y, start=c(2000, 1), frequency = 12)
+
+
+plot(fcastTS)
+
+str(fcastTS)
+
+fx <- select(fcast, .model_desc, .key, .index, .value)
+
+SumFYMonthV3 <- fx %>% 
+  group_by(.model_desc, .index) %>% 
+  summarise(Count = sum(.value, na.rm=TRUE))
 
