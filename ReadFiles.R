@@ -37,3 +37,18 @@ inputTsb %>% autoplot()
 
 
 
+
+inputSel2 <- inputTS %>% select(xDate, "Southwest Border")
+inputSel2 <- dplyr::rename(inputSel2, SWB = "Southwest Border")
+inputMelt2 <- melt(as.data.frame(inputSel2), id="xDate")
+
+inputMelt2 <- inputMelt2 %>%
+  mutate(Month = yearmonth(xDate)) %>%
+  as_tsibble(index = Month)
+
+inputMelt2 <- select(inputMelt2, -xDate)
+
+inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
+inputTsb2 %>% autoplot()
+
+
