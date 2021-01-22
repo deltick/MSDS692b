@@ -1,4 +1,11 @@
 library(fable.prophet)
+library (readr)
+library(tsibble)
+library(tsibbledata)
+library(fabletools)
+library(fable)
+library(dplyr)
+library(reshape)
 
 inputTsb %>% autoplot(value)
 
@@ -52,7 +59,27 @@ recent_production %>%
   autoplot(value) 
 
 
-fit3 <- recent_production %>%
+fit3 <- inputTsb2 %>%
   model(TSLM(value ~ trend() + season()))
 report(fit3)
+
+accuracy(fit3)
+
+### From fpp3 section 8.6
+
+fit4 <- inputTsb2 %>%
+  #model(TSLM(value ~ trend() + season()))
+  model(ETS(value))
+report(fit4)
+
+components(fit4) %>%
+  autoplot()
+
+augment(fit4) 
+
+fit4 %>%
+  forecast(h = 24) %>%
+  autoplot(inputTsb2)
+
+accuracy(fit4)
 
