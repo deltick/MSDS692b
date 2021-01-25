@@ -1,7 +1,14 @@
-# PDF Scrapper
-#https://www.cbp.gov/sites/default/files/assets/documents/2020-Jan/U.S.%20Border%20Patrol%20Monthly%20Apprehensions%20%28FY%202000%20-%20FY%202019%29_1.pdf
-
-## John Tamer
+# John Tamer
+# MSDS 692:  Data Science Practicum 1
+# Spring 2021
+# File: PDFScrapper.R
+# Description:
+#   This program reads the pdf file that contains US Border Patrol statistics for the period of 2000 to 2019.
+# The process uses tabulizer to scape the pdf data from each page.  The data from each table is converted to a dataframe,
+# cleaned and inverted.  Each of the individual dataframes is joined into one dataframe, the columns are renamed and the results are
+# written to an Excel file for subsequent processing. 
+# The input file is:
+# https://www.cbp.gov/sites/default/files/assets/documents/2020-Jan/U.S.%20Border%20Patrol%20Monthly%20Apprehensions%20%28FY%202000%20-%20FY%202019%29_1.pdf
 
 library(tabulizer)
 library(dplyr)
@@ -15,8 +22,11 @@ library(aTSA)
 library(data.table)
 library(readr)
 
+pdf_file <-"https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBP1.pdf"
 
-pdf_file <- "c:/users/john/desktop/USBP1.pdf"
+# The following code reads and scrapes data from each page of the pdf file.
+# Unused columns are dropped, obsolete columns are renamed and the relevant fiscal 
+# year is populated.
 
 #  FY2000
 FY2000 <- extract_tables(pdf_file, pages = 1)
