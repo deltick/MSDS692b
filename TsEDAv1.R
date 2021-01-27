@@ -10,6 +10,8 @@ library(timetk)
 library(tidyverse)
 library(ggplot2)
 library(anomalize)
+library(aTSA)
+library(tsbox)
 
 urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv"
 
@@ -56,6 +58,8 @@ inputTsb2 %>% autoplot()
 
 summary(inputSel2)
 hist(inputSel2$SWB)
+
+
 
 swb <- inputTsb2
 
@@ -160,3 +164,10 @@ forecast_mae <- function(data, col_train, col_test, prop = 0.8) {
   return(mae)
   
 }
+
+### EDA Tests using aTSA for ADF and tsbox to convert
+
+x.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
+adf.test(x.ts)
+
+

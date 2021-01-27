@@ -7,8 +7,6 @@ library(fable)
 library(dplyr)
 library(reshape)
 
-
-
 urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv"
 
 inputTS<-read_csv(url(urlfile))
