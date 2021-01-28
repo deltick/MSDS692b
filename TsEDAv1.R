@@ -28,7 +28,7 @@ inputSel <- dplyr::rename(inputSel, ELC = 'El Centro')
 inputSel <- dplyr::rename(inputSel, TUS = 'Tucson')
 inputSel <- dplyr::rename(inputSel, YUM = 'Yuma')
 
-#inputSel <- select(inputSel, -xDate)
+##inputSel <- select(inputSel, -xDate)
 
 inputMelt <- melt(as.data.frame(inputSel), id="xDate") #, variable_name = "count")
 
