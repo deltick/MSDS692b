@@ -120,6 +120,9 @@ plot(outliers_excess_ts)
 ```
 
 
+
+
+
 ```{r}
 
 ### EDA Tests using aTSA for ADF and tsbox to convert
@@ -141,6 +144,8 @@ xDiff.ts <- (diff(x.ts))
 plot((xDiff.ts),ylab='2  x Differenced Housing Prices')
 adf.test(xDiff.ts)
 kpss.test(xDiff.ts)
+
+
 ```
 
 ```{r}
@@ -171,5 +176,97 @@ acf(ts(AR1$residuals),main='ACF Residual')
 pacf(ts(AR1$residuals),main='PACF Residual')
 
 plot(forecast(AR1,24))
+```
+```{r}
+###################################################
+# anomalize package
+
+swbTib <- as_tibble(inputSel2)
+
+swbTib %>% 
+  time_decompose(SWB, method='stl') %>%
+  anomalize(remainder, method='iqr') %>%
+  time_recompose() %>%
+  plot_anomalies(time_recomposed=TRUE, ncol=3, alpha_dots=0.25)
+
+swbTib %>%
+  time_decompose(SWB) %>%
+  anomalize(remainder) %>%
+  plot_anomaly_decomposition() +
+  labs(title = "Decomposition of Anomalized Lubridate Downloads")
+
+
+library(tidyverse)
+library(tidyquant)
+library(anomalize)
+library(timetk)
+swbTib %>%
+  ggplot(aes(xDate, SWB)) +
+  geom_point(alpha = 0.5) +
+  #facet_wrap(~ package, ncol = 3, scales = "free_y") +
+  scale_color_viridis_d() +
+  theme_tq() 
+
+swb_anomalized <- swbTib %>%
+  time_decompose(SWB) %>%
+  anomalize(remainder) %>%
+  
+  # Function to clean & repair anomalous data
+  clean_anomalies()
+
+swb_anomalized %>%
+  plot_time_series(xDate, swb_anomalized$observed_cleaned)
+
+swb_anomalized %>%
+  plot_time_series(xDate, swb_anomalized$observed)
+
+#### Create new series from observed cleaned data
+
+newSWB <- swb_anomalized$observed_cleaned
+
+newSWB.ts <- ts(newSWB, start=c(2000, 1), frequency=12)
+
+#acf(diff(newSWB.ts),main='ACF Housing Prices South')
+#pacf(diff(newSWB.ts),main='PACF Housing Prices South')
+
+
+plot(newSWB.ts)
+
+
+
+```
+
+```{r}
+
+## ARIMA after removing outliers
+
+AR1 = auto.arima(newSWB.ts, approximation=FALSE,trace=FALSE)
+summary(AR1)
+
+res <- resid(AR1)
+Box.test(res, type=  "Box-Pierce" , lag = 4, fitdf = 2)
+#Box.test(res, type = "Ljung-Box", lag = 4, fitdf = 2)
+forecast::checkresiduals(AR1)
+
+
+x1 <- (AR1$x)
+x2 <- (AR1$fitted)
+library(ggplot2)
+x1df <- data.frame(Y=as.matrix(x1), date=time(x1))
+x2df <- data.frame(Y=as.matrix(x2), date=time(x2))
+p = ggplot() + 
+  geom_line(data = x1df, aes(x = date, y = Y), color = "blue") +
+  geom_line(data = x2df, aes(x = date, y = Y), color = "red") +
+  xlab('Date') +
+  ylab('Forecast vs Actual')
+print(p)
+
+
+par(mfrow=c(1,2))
+acf(ts(AR1$residuals),main='ACF Residual')
+pacf(ts(AR1$residuals),main='PACF Residual')
+
+plot(forecast(AR1,24))
+
 ```
 
