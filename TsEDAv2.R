@@ -76,29 +76,34 @@ swbTib %>%
 
 ## anomaly detection with tsoutliers
 
-outliers_excess_ts <- tso(x.ts, types = c("TC", "AO", "LS", "IO", "SLS"))
+#outliers_excess_ts <- tso(x.ts, types = c("TC", "AO", "LS", "IO", "SLS"))
 #ou<-outliers_excess_ts <- tso(x.ts, types = c("TC", "AO", "LS", "IO", "SLS"))
-outliers_excess_ts
-plot(outliers_excess_ts)
+#outliers_excess_ts
+#plot(outliers_excess_ts)
 
 
 ### EDA Tests using aTSA for ADF and tsbox to convert
 
 x.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
 adf.test(x.ts)
+par(mfrow = c(1,2))
+acf(x.ts,main='ACF')
+pacf(x.ts,main='PACF')
+
 
 ## Stationarity Tests
 tseries::adf.test(x.ts, k = 0)
 tseries::kpss.test(x.ts, null = "Trend")
 tseries::kpss.test(x.ts, null = "Level")
-#par(mfrow = c(1,2))
-acf(ts(diff((x.ts))),main='ACF Housing Prices South')
-pacf(ts(diff((x.ts))),main='PACF Housing Prices South')
+par(mfrow = c(1,2))
+acf(ts(diff((x.ts))),main='ACF')
+pacf(ts(diff((x.ts))),main='PACF')
 
 ## Differencing  from predictive analytics hw 6
+par(mfrow=c(1,1))
 ndiffs(x.ts)
 xDiff.ts <- (diff(x.ts))
-plot((xDiff.ts),ylab='2  x Differenced Housing Prices')
+plot((xDiff.ts),ylab='Differenced')
 adf.test(xDiff.ts)
 kpss.test(xDiff.ts)
 
@@ -132,12 +137,12 @@ plot(forecast(AR1,24))
 
 fit <- stl(x.ts, t.window=4, s.window="periodic", robust=TRUE)
 fit %>% seasadj() %>% naive() %>%
-  autoplot() + ylab("Housing Prices") +
+  autoplot() + ylab("Encounters") +
   ggtitle("STL Forecast")
 
 fit <- stl(xDiff.ts, t.window=4, s.window="periodic", robust=TRUE)
 fit %>% seasadj() %>% naive() %>%
-  autoplot() + ylab("Housing Prices") +
+  autoplot() + ylab("Encounters")+
   ggtitle("STL Forecast")
 
 
