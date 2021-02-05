@@ -1,9 +1,16 @@
 library(tsm)
 library(vars)
-library(mFilter)
+#library(mFilter)
 library(readxl)
 library(dplyr)
 library(readr)
+library(fable)
+library(tsibble)
+library(tsibbledata)
+library(lubridate)
+library(dplyr)
+library(tsibble)
+library(fabletools)
 
 #library(devtools)
 #devtools::install_github("KevinKotze/tsm")
@@ -15,9 +22,9 @@ t1 <- dplyr::rename(t1, value="Southwest Border")
 
 t1TS <- ts(t1$value, start = c(2000, 1), frequency = 12)
 
-USHS2000 <- window(USHS, start=c(2000, 1), end=c(2020, 1))
+#USHS2000 <- window(USHS, start=c(2000, 1), end=c(2020, 1))
 
-plot(cbind (t1TS, USHS2000))
+#plot(cbind (t1TS, USHS2000))
 
 library(fable)
 library(tsibble)
@@ -31,17 +38,20 @@ t1TS %>% as_tsibble()
 
 t1tb <- as_tsibble(t1TS)
 
-fit<- t1tb  %>% 
-  model(
-    ets = ETS(box_cox(value, 0.3)),
-    arima = ARIMA(log(value)),
-    snaive = SNAIVE(value) #,
-    #lm1 = TSLM((value) ~ trend() + season()),
-    #nn = NNETAR(box_cox(value, 0.15))
-  ) %>%
-  forecast(h = "2 years") %>%
-  autoplot((t1tb)) #, year(Month) > 2010), level = NULL)
-
+# fit<- t1tb  %>% 
+#   model(
+#     ets = ETS(box_cox(value, 0.3)),
+#     arima = ARIMA(log(value)),
+#     snaive = SNAIVE(value) ,
+#     lm1 = TSLM((value) ~ trend() + season())
+#     #nn = NNETAR(box_cox(value, 0.15))
+#   ) %>%
+#   forecast(h = "2 years") %>%
+#   autoplot((t1tb)) #, year(Month) > 2010), level = NULL)
+#   forecast1 <- fit %>%
+#   forecast(h = "5 years")
+# 
+# 
 
 ## https://fable.tidyverts.org/articles/fable.html
 
@@ -49,12 +59,24 @@ fit2<- t1tb  %>%
   model(
     ets = ETS(box_cox(value, 0.3)),
     arima = ARIMA(log(value)),
-    snaive = SNAIVE(value)
+    snaive = SNAIVE(value),
+    lm1 = TSLM((value) ~ trend() + season()),
+    nn = NNETAR(box_cox(value, 0.15))
   )
 
 fit2 %>%
   #filter(Region == "Snowy Mountains", Purpose == "Holiday") %>%
   select(arima) %>%
+  report()
+
+fit2 %>%
+  #filter(Region == "Snowy Mountains", Purpose == "Holiday") %>%
+  select(ets) %>%
+  report()
+
+fit2 %>%
+  #filter(Region == "Snowy Mountains", Purpose == "Holiday") %>%
+  select(snaive) %>%
   report()
 
 fit2
@@ -78,19 +100,21 @@ forecast1 %>%
   autoplot(t1tb)
 
 
-##https://robjhyndman.com/hyndsight/fable/
+##https://robjhyndman.com/hyndsight/fable/  USE THIS PART
 
 train <- t1tb %>%
-  filter(year(index) <= 2015)
+  filter(year(index) <= 2017)
 fit <- train %>%
   model(
     ets = ETS(value),
     arima = ARIMA(value),
-    snaive = SNAIVE(value)
+    snaive = SNAIVE(value),
+    lm1 = TSLM((value) ~ trend() + season()),
+    nn = NNETAR(box_cox(value, 0.15))
   ) %>%
   mutate(mixed = (ets + arima + snaive) / 3)
 
-fc <- fit %>% forecast(h = "4 years")
+fc <- fit %>% forecast(h = "2 years")
 
 fc %>%
   autoplot(t1tb, level = NULL)
@@ -113,7 +137,8 @@ fc_accuracy %>%
     MAE = mean(MAE),
     MASE = mean(MASE),
     Winkler = mean(winkler),
-    CRPS = mean(CRPS)
+    CRPS = mean(CRPS),
+    MAPE = mean(MAPE)
   ) %>%
   arrange(RMSE)
 
@@ -121,13 +146,24 @@ fc_accuracy %>%
 #### fable lm model)
 
 
-fitlm <- t1tb  %>%
+fitlm <- train  %>%
   model(lm = TSLM(log(value) ~ trend() + season()))
 
 fclm <- fitlm %>% forecast(h = "4 years")
 
 fclm %>%
   autoplot(t1tb)
+
+fclm_accuracy <- accuracy(fclm, t1tb,
+                        measures = list(
+                          point_accuracy_measures,
+                          interval_accuracy_measures,
+                          distribution_accuracy_measures
+                        )
+)
+
+fclm_accuracy
+
 
 
 #### fable nnet model
