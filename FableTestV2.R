@@ -14,7 +14,7 @@ library(fabletools)
 
 #library(devtools)
 #devtools::install_github("KevinKotze/tsm")
-TestV1 <- read_csv("C:/Users/John/Desktop/USBPTS.csv")
+TestV1 <- read_csv("C:/Users/JJT/Desktop/USBPTS.csv")
 t1 <- select(TestV1, xDate, "Southwest Border")
 
 t1 <- dplyr::rename(t1, date=xDate)

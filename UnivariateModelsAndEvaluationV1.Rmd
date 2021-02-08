@@ -68,9 +68,11 @@ swb <- inputTsb2
 swb.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
 #swbWindow.ts <- window(x.ts, start=c(2008, 1), end=c(2019, 4))
 
-swbWindow.ts <- swb.ts 
+#swbWindow.ts <- swb.ts 
 
-autoplot(swbWindow.ts)
+#swbWindow.ts <-inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
+
+#autoplot(swbWindow.ts)
 
 ```
 ## Fable Package Modeling
@@ -81,9 +83,9 @@ swbWindow.ts %>% as_tsibble()
 swbWindow.tsb <- as_tsibble(swbWindow.ts)
 
 train <- swbWindow.tsb %>%
-  filter(year(index) <= 2016)
+  filter(year(index) <= 2017)
 fit <- train %>%
-  model(
+  model(SS
     ets = ETS(value),
     arima = ARIMA(value),
     snaive = SNAIVE(value),
@@ -136,7 +138,7 @@ fc <- fit %>% forecast(h = "3 years")
 
 fc %>%
   autoplot(swbWindow.tsb, level = NULL) +
-  ggtitle("Southwest Border Encounters") +
+  ggtitle("Southwest Border Encounter Forecasts") +
   xlab("Year") +
   ylab("Encounters") +
   guides(colour = guide_legend(title = "Forecast"))
@@ -165,10 +167,15 @@ fc_accuracy %>%
   ) %>%
   arrange(RMSE)
 
+
+
 ```
 
 
 
+```{r}
+kable(fc_accuracy)
+```
 
 
 
@@ -326,31 +333,31 @@ t1 %>%
 ## Fable Residual Diagnostics
 
 ```{r}
-# library(feasts)
-# fit %>%
-#   select(arima) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(arima) %>%
-#   glance
-# 
-# fit %>%
-#   select(ets) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(snaive) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(lm1) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(nn) %>%
-#   gg_tsresiduals()
-# 
+library(feasts)
+fit %>%
+  select(arima) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(arima) %>%
+  glance
+
+fit %>%
+  select(ets) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(snaive) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(lm1) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(nn) %>%
+  gg_tsresiduals()
+
 
 
 ```
