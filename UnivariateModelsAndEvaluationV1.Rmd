@@ -85,7 +85,7 @@ swbWindow.tsb <- as_tsibble(swbWindow.ts)
 train <- swbWindow.tsb %>%
   filter(year(index) <= 2017)
 fit <- train %>%
-  model(SS
+  model(
     ets = ETS(value),
     arima = ARIMA(value),
     snaive = SNAIVE(value),
@@ -161,8 +161,8 @@ fc_accuracy %>%
     RMSE = mean(RMSE),
     MAE = mean(MAE),
     MASE = mean(MASE),
-    Winkler = mean(winkler),
-    CRPS = mean(CRPS),
+    #Winkler = mean(winkler),
+    #CRPS = mean(CRPS),
     MAPE = mean(MAPE)
   ) %>%
   arrange(RMSE)

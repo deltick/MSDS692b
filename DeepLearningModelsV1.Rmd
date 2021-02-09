@@ -342,7 +342,7 @@ plot(m, forecast)
 
 prophet_plot_components(m, forecast)
 
-df.cv <- cross_validation(m, initial=180, period=60, horizon=120, units='days')
+df.cv <- cross_validation(m, initial=240, period=30, horizon=12, units='days')
 tail(df.cv)
 
 plot_cross_validation_metric(df.cv, metric = 'mape')
