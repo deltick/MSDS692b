@@ -286,9 +286,12 @@ fit2 <- train %>% model(
 components(fit2) %>% autoplot()
 
 fc2 <- fit2 %>%
-  forecast(h = "2 years")
+  fabletools::forecast(h = "2 years")
 
-fc2 %>% autoplot(t1tb)
+fc2 %>% autoplot(t1tb) +
+  ggtitle("Prophet Forecast")
+
+
 
 fc2 %>% accuracy(t1tb)
 
