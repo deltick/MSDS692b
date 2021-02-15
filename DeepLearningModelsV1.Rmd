@@ -38,6 +38,8 @@ library(tidyquant)
 library(anomalize)
 library(tseries)
 library(forecast)
+library(prophet)
+library(fable.prophet)
 
 ```
 

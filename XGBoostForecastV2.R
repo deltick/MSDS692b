@@ -39,7 +39,7 @@ extended_data_mod <- extended_data %>%
                 months = lubridate::month(index_date),
                 years = lubridate::year(index_date))
 
-data <- extended_data_mod[1:length(ts), ] # initial data
+data <- extended_data_mod[1:(length(ts)), ] # initial data
 
 pred <- extended_data_mod[(length(ts) + 1):nrow(extended_data), ] # extended time index
 

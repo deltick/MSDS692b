@@ -2,6 +2,7 @@ library(readxl)
 library(TSstudio)
 library(dplyr)
 library(forecast)
+#library(timeSeries)
 
 urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv"
 inputTS<-read_csv(url(urlfile))
