@@ -9,12 +9,12 @@ library(dynlm)
 library(ggplot2)
 library(tseries)
 require(MTS)
-
+library(tidyverse)
 ## Read and format input files from Github repo
 
 urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv"
 inputTS<-read_csv(url(urlfile))
-inputSel2 <- inputTS %>% select("Southwest Border")
+inputSel2 <- inputTS %>% dplyr::select(xDate, "Southwest Border")
 inputSel2 <- dplyr::rename(inputSel2, Value = "Southwest Border")
 swb.ts <- ts(inputSel2, start=c(2000,1), frequency=12)
 
