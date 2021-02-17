@@ -96,3 +96,58 @@ prophet_plot_components(m, forecast)
 #tail(df.cv)
 
 #plot_cross_validation_metric(df.cv, metric = 'mape')
+
+
+
+lax_passengers <- read.csv("https://raw.githubusercontent.com/mitchelloharawild/fable.prophet/master/data-raw/lax_passengers.csv")
+library(dplyr)
+library(lubridate)
+lax_passengers <- lax_passengers %>%
+  mutate(datetime = mdy_hms(ReportPeriod)) %>%
+  dplyr::group_by(month = yearmonth(datetime), type = Domestic_International) %>%
+  dplyr::summarise(passengers = sum(Passenger_Count)) %>%
+  ungroup()
+
+lax_passengers
+library(fable.prophet)
+library(tsibble)
+lax_passengers <- as_tsibble(lax_passengers, index = month, key = type)
+lax_passengers
+
+lax_passengers %>% 
+  autoplot(passengers)
+
+prophet(passengers ~ growth("linear") + season("year", type = "multiplicative"))
+
+fit <- lax_passengers %>% 
+  model(
+    mdl = prophet(passengers ~ growth("linear") + season("year", type = "multiplicative")),
+  )
+fit
+
+components(fit)
+
+components(fit) %>% 
+  autoplot()
+library(ggplot2)
+components(fit) %>% 
+  ggplot(aes(
+    # Plot the month of the time index (month) on the x-axis
+    x = month(month, label = TRUE),
+    # Plot the annual seasonal term (year) on the y-axis
+    y = year, 
+    # Colour by the passenger type
+    colour = type,
+    # Draw separate lines for each type and year
+    group = interaction(type, year(month))
+  )) +  
+  geom_line()
+
+fc <- fit %>% 
+  forecast(h = "3 years")
+fc
+
+fc %>% 
+  autoplot(lax_passengers)
+
+accuracy(fit)
