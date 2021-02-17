@@ -29,7 +29,7 @@ gdp <- inputEcon %>% select(USGDP)
 housing <- inputEcon %>% select(USHousingStarts)
 unemp <- inputEcon %>% select(USUnemployment)
 
-## Create time series object and set matching windows
+## Create time series object and set matchilibraryng windows
 
 gdp.ts <- ts(gdp, start=c(1960, 1), frequency=12)
 gdp.ts <- window(gdp.ts, start=c(2000, 1), end=c(2019,12))
