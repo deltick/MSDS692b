@@ -151,3 +151,10 @@ fc %>%
   autoplot(lax_passengers)
 
 accuracy(fit)
+
+################################################################################
+dates1 <- inputDates
+dates2 <- inputDates
+datesAll <- rbind(dates1, dates2)
+unemp.scaled.ts.df.melt <- melt(unemp.scaled.ts.df,value.name = "value")
+
