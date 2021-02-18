@@ -1,5 +1,5 @@
 ---
-title: "DeepLearningModels"
+title: "TsEDAv2"
 author: "John Tamer"
 date: "1/30/2021"
 output:
@@ -38,8 +38,6 @@ library(tidyquant)
 library(anomalize)
 library(tseries)
 library(forecast)
-library(prophet)
-library(fable.prophet)
 
 ```
 
@@ -52,36 +50,178 @@ urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv
 inputTS<-read_csv(url(urlfile))
 
 
-# inputSel2 <- inputTS %>% select(xDate, "Southwest Border")
-# inputSel2 <- dplyr::rename(inputSel2, SWB = "Southwest Border")
-# inputMelt2 <- melt(as.data.frame(inputSel2), id="xDate")
-# 
-# inputMelt2 <- inputMelt2 %>%
-#   mutate(Month = yearmonth(xDate)) %>%
-#   as_tsibble(index = Month)
-# 
-# inputMelt2 <- select(inputMelt2, -xDate)
-# 
-# inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
-# inputTsb2 %>% autoplot()
-# 
-# swb <- inputTsb2
-# 
-# swb.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
-# #swbWindow.ts <- window(x.ts, start=c(2008, 1), end=c(2019, 4))
-# 
-# swbWindow.ts <- swb.ts 
-# 
-# autoplot(swbWindow.ts)
+inputSel2 <- inputTS %>% select(xDate, "Southwest Border")
+inputSel2 <- dplyr::rename(inputSel2, SWB = "Southwest Border")
+inputMelt2 <- melt(as.data.frame(inputSel2), id="xDate")
+
+inputMelt2 <- inputMelt2 %>%
+  mutate(Month = yearmonth(xDate)) %>%
+  as_tsibble(index = Month)
+
+inputMelt2 <- select(inputMelt2, -xDate)
+
+inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
+inputTsb2 %>% autoplot()
+
+swb <- inputTsb2
+
+swb.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
+#swbWindow.ts <- window(x.ts, start=c(2008, 1), end=c(2019, 4))
+
+#swbWindow.ts <- swb.ts 
+
+#swbWindow.ts <-inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
+
+#autoplot(swbWindow.ts)
 
 ```
 ## Fable Package Modeling
 
+```{r}
+
+swbWindow.ts %>% as_tsibble()
+swbWindow.tsb <- as_tsibble(swbWindow.ts)
+
+train <- swbWindow.tsb %>%
+  filter(year(index) <= 2017)
+fit <- train %>%
+  model(
+    ets = ETS(value),
+    arima = ARIMA(value),
+    snaive = SNAIVE(value),
+    lm1 = TSLM((value) ~ trend() + season()),
+    #nn = NNETAR(box_cox(value, 0.15)),
+    rw = RW(value)
+  ) #%>%
+  #mutate(mixed = (ets + arima + snaive) / 3)
+
+
+```
 
 
 
 
 
+```{r}
+
+fit %>%
+  select(arima) %>%
+  report()
+
+
+fit %>%
+  select(ets) %>%
+  report()
+
+fit %>%
+  select(snaive) %>%
+  report()
+
+fit %>%
+  select(lm1) %>%
+  report()
+
+#fit %>%
+#  select(nn) %>%
+#  report()
+
+
+fit %>%
+  select(rw) %>%
+  report()
+
+```
+
+
+```{r}
+fc <- fit %>% forecast(h = "3 years")
+
+fc %>%
+  autoplot(swbWindow.tsb, level = NULL) +
+  ggtitle("Southwest Border Encounter Forecasts") +
+  xlab("Year") +
+  ylab("Encounters") +
+  guides(colour = guide_legend(title = "Forecast"))
+
+
+#accuracy(fc, swbWindow.tsb)
+
+
+fc_accuracy <- accuracy(fc, swbWindow.tsb,
+                        measures = list(
+                          point_accuracy_measures,
+                          interval_accuracy_measures,
+                          distribution_accuracy_measures
+                        )
+)
+
+fc_accuracy %>%
+  group_by(.model) %>%
+  summarise(
+    RMSE = mean(RMSE),
+    MAE = mean(MAE),
+    MASE = mean(MASE),
+    #Winkler = mean(winkler),
+    #CRPS = mean(CRPS),
+    MAPE = mean(MAPE)
+  ) %>%
+  arrange(RMSE)
+
+
+
+```
+
+
+
+```{r}
+kable(fc_accuracy)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+# AR1 = auto.arima(swbWindow.tsb, approximation=FALSE,trace=FALSE)
+# summary(AR1)
+# 
+# res <- resid(AR1)
+# Box.test(res, type=  "Box-Pierce" , lag = 4, fitdf = 2)
+# #Box.test(res, type = "Ljung-Box", lag = 4, fitdf = 2)
+# forecast::checkresiduals(AR1)
+# 
+# 
+# x1 <- (AR1$x)
+# x2 <- (AR1$fitted)
+# library(ggplot2)
+# x1df <- data.frame(Y=as.matrix(x1), date=time(x1))
+# x2df <- data.frame(Y=as.matrix(x2), date=time(x2))
+# p = ggplot() + 
+#   geom_line(data = x1df, aes(x = date, y = Y), color = "blue") +
+#   geom_line(data = x2df, aes(x = date, y = Y), color = "red") +
+#   xlab('Date') +
+#   ylab('Forecast vs Actual')
+# print(p)
+# 
+# 
+# par(mfrow=c(1,2))
+# acf(ts(AR1$residuals),main='ACF Residual')
+# pacf(ts(AR1$residuals),main='PACF Residual')
+# 
+# 
+# par(mfrow=c(1,1))
+# plot(forecast(AR1,24))
+```
 ## ModelTime and TimeTK Packages
 
 ```{r}
@@ -193,164 +333,43 @@ t1 %>%
 ## Fable Residual Diagnostics
 
 ```{r}
-# library(feasts)
-# fit %>%
-#   select(arima) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(arima) %>%
-#   glance
-# 
-# fit %>%
-#   select(ets) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(snaive) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(lm1) %>%
-#   gg_tsresiduals()
-# 
-# fit %>%
-#   select(nn) %>%
-#   gg_tsresiduals()
-# 
+library(feasts)
+fit %>%
+  select(arima) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(arima) %>%
+  glance
+
+fit %>%
+  select(ets) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(snaive) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(lm1) %>%
+  gg_tsresiduals()
+
+fit %>%
+  select(nn) %>%
+  gg_tsresiduals()
+
 
 
 ```
 
 ```{r}
-# gg_tsdisplay(
-#   swbWindow.tsb,
-#   y = value,
-#   plot_type = c("auto", "partial", "season", "histogram", "scatter", "spectrum"),
-#   lag_max = NULL
-# )
-
-```
-
-
-```{r}
-inputSel <- inputTS %>% select(xDate, "Southwest Border")
-inputMelt <- melt(as.data.frame(inputSel), id="xDate") 
-inputTsb <- as_tsibble(inputMelt, index=xDate, key=variable)
-inputTsb %>% autoplot(value)
-
-```
-
-
-
-
-```{r}
-
-#inputTsb <- inputTsb2 %>% select(-variable)
-
-t1 <- inputSel
-
-t1 <- dplyr::rename(t1, date=xDate)
-t1 <- dplyr::rename(t1, value="Southwest Border")
-
-t1TS <- ts(t1$value, start = c(2000, 1), frequency = 12)
-t1TS %>% as_tsibble()
-
-t1tb <- as_tsibble(t1TS)
-
-
-train <- t1tb %>%
-  filter(year(index) <= 2017)
-
-# fit <- train %>% model(
-#   prophet = prophet(value ~ index)
-# )
-# 
-# fit
-# 
-# components(fit)
-# 
-# components(fit)  %>% autoplot()
-# 
-# fc <- fit %>%
-#   forecast(h = "3 years")
-# 
-# fc %>% autoplot(t1tb)
-# 
-# fc %>% accuracy(t1tb)
-# 
-
-
-fit2 <- train %>% model(
-  prophet = prophet(value ~ growth("linear") + season("year", type="additive"))
+gg_tsdisplay(
+  swbWindow.tsb,
+  y = value,
+  plot_type = c("auto", "partial", "season", "histogram", "scatter", "spectrum"),
+  lag_max = NULL
 )
 
-components(fit2) %>% autoplot()
-
-fc2 <- fit2 %>%
-  fabletools::forecast(h = "2 years")
-
-fc2 %>% autoplot(t1tb) +
-  ggtitle("Prophet Forecast")
-
-
-
-fc2 %>% accuracy(t1tb)
-
-
 ```
 
-```{r}
-#### fable nnet model
-
-fitnn <- train  %>%
-  model(nn = NNETAR(box_cox(value, 0.15)))
-
-fcnn <- fitnn %>% forecast(h = "2 years")
-
-fcnn %>%
-  autoplot(t1tb)
-
-accuracy(fcnn, t1tb,  ##need to fix this
-         measures = list(
-           point_accuracy_measures,
-           interval_accuracy_measures,
-           distribution_accuracy_measures
-         ))
-
-
-
-```
-
-```{r}
-library(prophet)
-library(readxl)
-
-
-#df <- read_excel("C:/Users/JJT/Desktop/SWBAppsV2.xlsx")
-df <- read_excel("C:/Users/JJT/Desktop/SWBv3.xlsx")
-tail(df)
-
-names(df) <- c('ds', 'y')    #, 'y2', 'y3') 
-
-
-###################################################
-
-m <- prophet(df)
-
-future <- make_future_dataframe(m, periods=24)
-
-forecast <- predict(m, future)
-tail(forecast)
-
-plot(m, forecast)
-
-prophet_plot_components(m, forecast)
-
-df.cv <- cross_validation(m, initial=240, period=30, horizon=12, units='days')
-tail(df.cv)
-
-plot_cross_validation_metric(df.cv, metric = 'mape')
-
-```
 
