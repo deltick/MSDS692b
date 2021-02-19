@@ -10,7 +10,7 @@ library(dplyr)
 m750 <- m4_monthly %>% filter(id == "M750")
 
 TestV1 <- read_csv("C:/Users/JJT/Desktop/USBPTS.csv")
-t1 <- select(TestV1, xDate, "Southwest Border")
+t1 <- dplyr::select(TestV1, xDate, "Southwest Border")
 
 t1 <- dplyr::rename(t1, date=xDate)
 t1 <- dplyr::rename(t1, value="Southwest Border")
@@ -51,6 +51,9 @@ model_fit_lm <- linear_reg() %>%
   fit(value ~ as.numeric(date) + factor(month(date, label = TRUE), ordered = FALSE),
       data = training(splits))
 
+model_fit_nn <- nnetar_reg() %>%
+  set_engine(engine = "nnetar") %>% 
+  fit(log(value) ~ date, data = training(splits))
 
 model_spec_mars <- mars(mode = "regression") %>%
   set_engine("earth") 
@@ -72,6 +75,7 @@ models_tbl <- modeltime_table(
   model_fit_ets,
   model_fit_prophet,
   model_fit_lm,
+  model_fit_nn,
   wflw_fit_mars
 )
 models_tbl
@@ -101,6 +105,7 @@ calibration_tbl %>%
 
 refit_tbl <- calibration_tbl %>%
   modeltime_refit(data = m750)
+
 refit_tbl %>%
   modeltime_forecast(h = "3 years", actual_data = m750) %>%
   plot_modeltime_forecast(
@@ -129,9 +134,10 @@ plot(fcastTS)
 
 str(fcastTS)
 
-fx <- select(fcast, .model_desc, .key, .index, .value)
+fx <- dplyr::select(fcastTS, .model_desc, .key, .index, .value)
 
 SumFYMonthV3 <- fx %>% 
   group_by(.model_desc, .index) %>% 
   summarise(Count = sum(.value, na.rm=TRUE))
+################################################################################
 

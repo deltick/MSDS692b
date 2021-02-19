@@ -70,10 +70,12 @@ unemp.scaled.ts.df <- unemp.scaled.ts.df$value
 
 df <- cbind(inputDates,swb.scaled.ts.df, housing.scaled.ts.df, unemp.scaled.ts.df )
 
-#df <- read_excel("C:/Users/JJT/Desktop/SWBv3.xlsx")
-#tail(df)
+df <- read_excel("C:/Users/JJT/Desktop/SWBv3.xlsx")
+tail(df)
+names(df) <- c('ds', 'y') #, 'y2', 'y3') 
 
-names(df) <- c('ds', 'y', 'y2', 'y3') 
+lam = BoxCox.lambda(df$y, method = "loglik")
+df$y = BoxCox(df$y, lam)
 
 
 ###################################################
@@ -83,7 +85,7 @@ m <- prophet()
 m <- fit.prophet(m, df)
 
 
-future <- make_future_dataframe(m, periods=24)
+future <- make_future_dataframe(m, freq="month", periods=24, include_history=TRUE)
 
 forecast <- predict(m, future)
 tail(forecast)
@@ -92,12 +94,27 @@ plot(m, forecast)
 
 prophet_plot_components(m, forecast)
 
-#df.cv <- cross_validation(m, initial=240, period=30, horizon=12, units='days')
-#tail(df.cv)
 
-#plot_cross_validation_metric(df.cv, metric = 'mape')
+inverse_forecast <- forecast
+inverse_forecast <- column_to_rownames(inverse_forecast, var = "ds")
+inverse_forecast$yhat_untransformed = InvBoxCox(forecast$yhat, lam)
+
+inverse1.ts <- ts(inverse_forecast$yhat_untransformed, start=c(2000, 1), frequency=12)
+autoplot(inverse1.ts)
+
+all.ts <- cbind(swb.ts, inverse1.ts)
+autoplot(all.ts)
 
 
+df.cv <- cross_validation(m, initial=24*30, horizon=12*30, units='days')
+
+
+
+tail(df.cv)
+
+plot_cross_validation_metric(df.cv, metric = 'mape')
+
+plot(inverse_forecast$yhat_untransformed)
 
 lax_passengers <- read.csv("https://raw.githubusercontent.com/mitchelloharawild/fable.prophet/master/data-raw/lax_passengers.csv")
 library(dplyr)
