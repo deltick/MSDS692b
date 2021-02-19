@@ -115,7 +115,7 @@ model_fit_arima_boost <- arima_boost() %>%
 
 model_fit_nn <- nnetar_reg() %>%
     set_engine(engine = "nnetar") %>%
-    fit(log(value) ~ date, data = training(splits))
+    fit((value) ~ date, data = training(splits))
 
 model_spec_mars <- mars(mode = "regression") %>%
     set_engine("earth")
@@ -128,6 +128,16 @@ wflw_fit_mars <- workflow() %>%
     add_recipe(recipe_spec) %>%
     add_model(model_spec_mars) %>%
     fit(training(splits))
+
+model_fit_ets <- exp_smoothing(
+        seasonal_period  = 12,
+        error            = "multiplicative",
+        trend            = "none",
+        season           = "multiplicative"
+    ) %>%
+    set_engine("ets") %>%
+    fit((value) ~ date, data = training(splits))
+
 
 # 3.0 MODELTIME FORECAST WORKFLOW ----
 
@@ -144,7 +154,8 @@ model_tbl <- modeltime_table(
     model_fit_prophet_boost,
     model_fit_arima_boost,
     model_fit_nn,
-    wflw_fit_mars
+    wflw_fit_mars,
+    model_fit_ets
 )
 
 # * Calibrate ----
