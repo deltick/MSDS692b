@@ -87,29 +87,29 @@ ndiffs((combined.ts[,4]))
 swb.train <- window(swb.ts, end=c(2017,12))
 swb.test  <- window(swb.ts, start=c(2018,1))
 
-## Univariate Test with Holt-Winters
-
-fit.holt<-holt(swb.train, h=24, initial="optimal")
-summary(fit.holt)
-plot(forecast(fit.holt))
-lines(swb.test, type='o')
-
-## Univariate Test with auto ARIMA
-
-fit.arima <- auto.arima(swb.train)
-summary(fit.arima)
-plot(forecast(fit.arima))
-lines(swb.test, type='o')
-
-## Time Series Regression
-x=combined.ts[,1]
-y=combined.ts[,3]
-fit.lm <- lm(y~x)
-summary(fit.lm)
-plot.ts(fit.lm$residuals)
-Acf(fit.lm$residuals)
-dwtest(fit.lm)
-
+# ## Univariate Test with Holt-Winters
+# 
+# fit.holt<-holt(swb.train, h=24, initial="optimal")
+# summary(fit.holt)
+# plot(forecast(fit.holt))
+# lines(swb.test, type='o')
+# 
+# ## Univariate Test with auto ARIMA
+# 
+# fit.arima <- auto.arima(swb.train)
+# summary(fit.arima)
+# plot(forecast(fit.arima))
+# lines(swb.test, type='o')
+# 
+# ## Time Series Regression
+# x=combined.ts[,1]
+# y=combined.ts[,3]
+# fit.lm <- lm(y~x)
+# summary(fit.lm)
+# plot.ts(fit.lm$residuals)
+# Acf(fit.lm$residuals)
+# dwtest(fit.lm)
+# 
 
 ### Grainger Causality
 
