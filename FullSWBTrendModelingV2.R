@@ -207,7 +207,52 @@ forecast_tbl %>%
     bind_rows(mean_forecast_tbl) %>%
     plot_modeltime_forecast()
 
-# BONUS - SHINY APP ----
-# - Get your hands on this app
-# - Accelerate your career
+## Compare FOrecasts to Actual 202 results
 
+allPred <- forecast_tbl %>%
+dplyr::filter(.key == 'prediction') %>%
+dplyr::select(.model_desc, .index, .value) 
+
+Y20Actuals <- read_csv("C:/Users/JJT/Desktop/Y20Actuals.csv")
+allValues <- rbind(allPred, Y20Actuals)
+allValues.cast <- dcast(allValues, .index ~ .model_desc, mean)
+
+allValues.cast.tsb <- as_tsibble(allValues.cast)
+
+actual.ts <- ts(allValues.cast$ACTUAL, start=c(2020, 1), frequency=12)
+earth.ts <- ts(allValues.cast$EARTH, start=c(2020, 1), frequency=12)
+etsmnm.ts <- ts(allValues.cast$`ETS(M,N,M)`, start=c(2020, 1), frequency=12)
+kernlab.ts <- ts(allValues.cast$KERNLAB, start=c(2020, 1), frequency=12)
+lm.ts <- ts(allValues.cast$LM, start=c(2020, 1), frequency=12)
+nnetar.ts <- ts(allValues.cast$`NNAR(1,1,10)[12]`, start=c(2020, 1), frequency=12)
+prophet.ts <- ts(allValues.cast$PROPHET, start=c(2020, 1), frequency=12)
+prophetxg.ts <- ts(allValues.cast$`PROPHET W/ XGBOOST ERRORS`, start=c(2020, 1), frequency=12)
+randomforest.ts <- ts(allValues.cast$RANDOMFOREST, start=c(2020, 1), frequency=12)
+arima1.ts <- ts(allValues.cast$`UPDATE: ARIMA(3,1,2)(2,1,1)[12] W/ XGBOOST ERRORS`, start=c(2020, 1), frequency=12)
+arima2.ts <- ts(allValues.cast$`UPDATE: ARIMA(4,1,0)(2,1,1)[12]`, start=c(2020, 1), frequency=12)
+xgboost.ts <- ts(allValues.cast$XGBOOST, start=c(2020, 1), frequency=12)
+
+all2020Preds <- cbind(actual.ts, earth.ts, etsmnm.ts, kernlab.ts, lm.ts, nnetar.ts, prophet.ts, prophetxg.ts, randomforest.ts, arima1.ts, arima2.ts, xgboost.ts)
+
+autoplot(all2020Preds) +
+    ggtitle('Plot of Predicions vs 2020 Actuals')
+
+mape(allValues.cast, ACTUAL, LM)
+rmse(allValues.cast, ACTUAL, LM)
+mape(allValues.cast, ACTUAL, KERNLAB)
+rmse(allValues.cast, ACTUAL, KERNLAB)
+
+fMape <-  function(est) {
+    allMape <- yardstick::mape(allValues.cast, allValues.cast$ACTUAL, est )
+    return(allMape)
+}
+
+fRmse <-  function(est) {
+    allRmse <- yardstick::rmse(allValues.cast, allValues.cast$ACTUAL, est )
+    return(allRmse)
+}
+
+
+# allValues.cast %>%
+#     as_tibble() %>%
+#     mutate(across(2:ncol(allValues.cast), fMape({.col})))
