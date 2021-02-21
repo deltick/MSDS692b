@@ -13,7 +13,8 @@ library(readr)
 library(fable)
 library(tsibble)
 library(tsibbledata)
-
+library(yardstick)
+library(reshape2)
 
 # 1.0 LOAD DATA FROM REPO ----
 
@@ -207,7 +208,7 @@ forecast_tbl %>%
     bind_rows(mean_forecast_tbl) %>%
     plot_modeltime_forecast()
 
-## Compare FOrecasts to Actual 202 results
+## Compare FOrecasts to Actual 2020 results
 
 allPred <- forecast_tbl %>%
 dplyr::filter(.key == 'prediction') %>%
@@ -237,22 +238,48 @@ all2020Preds <- cbind(actual.ts, earth.ts, etsmnm.ts, kernlab.ts, lm.ts, nnetar.
 autoplot(all2020Preds) +
     ggtitle('Plot of Predicions vs 2020 Actuals')
 
-mape(allValues.cast, ACTUAL, LM)
-rmse(allValues.cast, ACTUAL, LM)
-mape(allValues.cast, ACTUAL, KERNLAB)
-rmse(allValues.cast, ACTUAL, KERNLAB)
+get_combined_metrics <- function(est) {
+    allMetrics <- combined_metrics_set(allValues.cast, ACTUAL, est )
+    return(allMetrics)
+}    
+    
+    
+    
+    
+combined_metrics_set <- metric_set(mape, rmse, mase, mae)
 
-fMape <-  function(est) {
-    allMape <- yardstick::mape(allValues.cast, allValues.cast$ACTUAL, est )
-    return(allMape)
+#metrics_output <- vector("double", ncol(allValues.cast))
+metrics_output <-  NULL
+for (i in seq_along((allValues.cast))) {
+    #metrics_output[[i]] <- combined_metrics_set(allValues.cast, ACTUAL,allValues.cast[[i]] )
+    #metrics_output[[i]] <- fMape(allValues.cast[[i]] )
+    if (i > 1)
+        #print(fMape(allValues.cast[[i]] ))
+        metrics_output[[i]] <- get_combined_metrics(allValues.cast[[i]] )
+        #bind_rows(metrics_output,fMape(allValues.cast[[i]] ) )
 }
 
-fRmse <-  function(est) {
-    allRmse <- yardstick::rmse(allValues.cast, allValues.cast$ACTUAL, est )
-    return(allRmse)
-}
+metrics_output <- bind_rows(metrics_output)
+all_mape <- filter(metrics_output, .metric=='mape')
+all_rmse <- filter(metrics_output, .metric=='rmse')
+all_mase <- filter(metrics_output, .metric=='mase')
+all_mae  <- filter(metrics_output, .metric=='mae')
+
+all_metrics <- cbind(all_mape, all_rmse, all_mase, all_mae)
+names(all_metrics)[1] <- "mapen"
+names(all_metrics)[2] <- "mape"
+names(all_metrics)[3] <- "rmsen"
+names(all_metrics)[4] <- "rmse"
+names(all_metrics)[5] <- "masen"
+names(all_metrics)[6] <- "mase"
+names(all_metrics)[7] <- "maen"
+names(all_metrics)[8] <- "mae"
+
+all_metrics.tib <- all_metrics %>% 
+    select(mape, rmse, mase, mae)
+
+row.names(all_metrics.tib) <- c("Actual", "Earth", "ETS" , "Kernlab", "LM",
+                                "NNetAR", "Prophet", "ProphetXG", "RandomForest", "Arima1",
+                                "Arima2", "XGBoost")
 
 
-# allValues.cast %>%
-#     as_tibble() %>%
-#     mutate(across(2:ncol(allValues.cast), fMape({.col})))
