@@ -5,7 +5,9 @@ date: "2/21/2021"
 output:
   word_document: default
   pdf_document: default
-always_allow_html: true
+  html_document:
+    df_print: paged
+always_allow_html: yes
 ---
 
 ```{r setup, include=FALSE}
@@ -197,7 +199,7 @@ calibration_tbl <- model_tbl %>%
 
 calibration_tbl %>%
     modeltime_accuracy() %>%
-    table_modeltime_accuracy(resizable = TRUE, bordered = TRUE)
+    table_modeltime_accuracy(.interactive = FALSE)
 
 calibration_tbl %>%
     modeltime_forecast(
@@ -206,7 +208,8 @@ calibration_tbl %>%
         conf_interval = 0.80
     ) %>%
     plot_modeltime_forecast(.legend_show = TRUE, 
-                            .legend_max_width = 25)
+                            .legend_max_width = 25,
+                            .interactive=FALSE)
 
 ```
 
@@ -223,7 +226,7 @@ forecast_tbl <- refit_tbl %>%
     ) 
 
 forecast_tbl %>%
-    plot_modeltime_forecast(.interactive = TRUE)
+    plot_modeltime_forecast(.interactive = FALSE)
 
 
 ```
@@ -246,7 +249,7 @@ mean_forecast_tbl <- forecast_tbl %>%
 forecast_tbl %>%
     filter(.key == "actual") %>%
     bind_rows(mean_forecast_tbl) %>%
-    plot_modeltime_forecast()
+    plot_modeltime_forecast(.interactive = FALSE)
 
 ```
 
