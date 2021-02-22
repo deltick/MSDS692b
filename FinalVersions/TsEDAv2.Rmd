@@ -61,7 +61,9 @@ inputMelt2 <- select(inputMelt2, -xDate)
 inputTsb2 <- as_tsibble(inputMelt2, index=Month, key=variable)
 inputTsb2 %>% autoplot()
 
-x.ts <- ts(swb$value, start=c(2000, 01), frequency=12)
+swb <- inputSel2
+
+x.ts <- ts(swb$SWB, start=c(2000, 01), frequency=12)
 xWindow <- window(x.ts, start=c(2000, 7), end=c(2019, 4))
 
 autoplot(xWindow)
