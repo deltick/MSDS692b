@@ -10,6 +10,7 @@ library(ggplot2)
 library(tseries)
 require(MTS)
 library(tidyverse)
+library(stargazer)
 ## Read and format input files from Github repo
 
 urlfile="https://raw.githubusercontent.com/deltick/MSDS692b/main/Data/USBPTS.csv"
@@ -59,7 +60,7 @@ autoplot(combined.ts) +
 
 ## #Examine correlations between vectors
 
-cor(combined.ts)
+stargazer(cor(combined.ts), type="text")
 
 acf(combined.ts[,3],main="ACF Housing Starts")
 pacf(combined.ts[,3],main="PACF Housing Starts")
@@ -102,13 +103,13 @@ swb.test  <- window(swb.ts, start=c(2018,1))
 # lines(swb.test, type='o')
 # 
 # ## Time Series Regression
-# x=combined.ts[,1]
-# y=combined.ts[,3]
-# fit.lm <- lm(y~x)
-# summary(fit.lm)
-# plot.ts(fit.lm$residuals)
-# Acf(fit.lm$residuals)
-# dwtest(fit.lm)
+ y=combined.ts[,1]
+ x=combined.ts[,3]
+ fit.lm <- lm(y~x)
+ summary(fit.lm)
+ plot.ts(fit.lm$residuals)
+ Acf(fit.lm$residuals)
+ dwtest(fit.lm)
 # 
 
 ### Grainger Causality
@@ -122,7 +123,7 @@ dGranger <- diff(Granger)
 lag=VARselect(dGranger, lag.max=12)
 lag$selection
 
-lag12 <- vars::VAR(dGranger, p=12)
+lag12 <- vars::VAR(dGranger, p=13)
 summary(lag12)
 
 serial.test(lag12, type="PT.asymptotic")
@@ -182,7 +183,7 @@ VARselect(stnry,
           lag.max = 12)
 
 var.a <- vars::VAR(stnry,
-                   lag.max = 10, #highest lag order for lag length selection according to the choosen ic
+                   lag.max = 13, #highest lag order for lag length selection according to the choosen ic
                    ic = "AIC", #information criterion
                    type = "none") #type of deterministic regressors to include
 summary(var.a)

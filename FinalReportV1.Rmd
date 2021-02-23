@@ -2,28 +2,24 @@
 title: "MSDS 692 Practicum 1 Final Report"
 author: "John Tamer"
 date: "2/21/2021"
+always_allow_html: yes
 output:
+  word_document: default
+  github_document: default
   html_document:
     df_print: paged
   pdf_document: default
-  word_document: default
 ---
 
 # Forecasting US Border Patrol Encounters Along the US-Mexico Border
 
 # Introduction
 
-The US-Mexico border is one of the longest and busiest in the world (Figure 1). According to the
-US Bureau of Transportation Statistics, in 2018, 500,000 people and \$1.7 billion worth of goods crossed the nearly 2,000-mile border every day. Mexico is the United States' third-biggest trading partner behind Canada and China; US consumers and manufacturers are also heavily reliant upon the dozens of road and rail networks that connect the two countries along the border. Consumers and manufacturers are thus concerned when surges of migrants from Central America causes disruptions to the movement of people and goods across the US-Mexico border.
+The US-Mexico border is one of the longest and busiest in the world (Figure 1). According to the US Bureau of Transportation Statistics, in 2018, 500,000 people and \$1.7 billion worth of goods crossed the nearly 2,000-mile border every day. Mexico is the United States' third-biggest trading partner behind Canada and China; US consumers and manufacturers are also heavily reliant upon the dozens of road and rail networks that connect the two countries along the border. Consumers and manufacturers are thus concerned when surges of migrants from Central America causes disruptions to the movement of people and goods across the US-Mexico border.
 
 ![Figure 1: US-Mexico Border](plots/Figure1.jpg)
 
-The US Border Patrol has a seemingly straightforward mission: Secure the US borders between
-ports of entry. However, th length and diversity of the Southwest border, in particular, makes this a difficult if not impossible task. In addition, the nature of immigration along the southern US border
-has changed over the course of the last 20 years. According the Stratfor (2021), in 2000, Mexican nationals accounted for 98% of apprehensions along the US-Mexico border. Since 2000, encounters
-with Mexican nationals have been declining, while encounters with nationals from Guatemala, Honduras and El Salvador have been increasing. The reasons for these increases, referred to as push and
-pull factors, are diverse. According to Stratfor, "poverty, crime, and corruption already provided Guatemalans, Hondurans, and Salvadorans plenty of incentives to emigrate before 2020, as evidenced by the years-long upward trend in apprehensions of Northern Triangle nationals along the US-Mexico border" (2021). Add to that the economic impact of the COVID-19 pandemic, back-to-back major
-hurricanes in November of 2020, and worsening living conditions in the Northern Triangle, especially for the poorer, marginalized segments of society. Whatever the reasons, the problems at the Southwest border will not soon subside due to changes in immigration policy or the construction of a border wall. Unfortunately, the US Border Patrol constantly finds itself in a reactive posture, attempting to adjust resources and deployments based on what has already happened.
+The US Border Patrol has a seemingly straightforward mission: Secure the US borders between ports of entry. However, th length and diversity of the Southwest border, in particular, makes this a difficult if not impossible task. In addition, the nature of immigration along the southern US border has changed over the course of the last 20 years. According the Stratfor (2021), in 2000, Mexican nationals accounted for 98% of apprehensions along the US-Mexico border. Since 2000, encounters with Mexican nationals have been declining, while encounters with nationals from Guatemala, Honduras and El Salvador have been increasing. The reasons for these increases, referred to as push and pull factors, are diverse. According to Stratfor, "poverty, crime, and corruption already provided Guatemalans, Hondurans, and Salvadorans plenty of incentives to emigrate before 2020, as evidenced by the years-long upward trend in apprehensions of Northern Triangle nationals along the US-Mexico border" (2021). Add to that the economic impact of the COVID-19 pandemic, back-to-back major hurricanes in November of 2020, and worsening living conditions in the Northern Triangle, especially for the poorer, marginalized segments of society. Whatever the reasons, the problems at the Southwest border will not soon subside due to changes in immigration policy or the construction of a border wall. Unfortunately, the US Border Patrol constantly finds itself in a reactive posture, attempting to adjust resources and deployments based on what has already happened.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -53,12 +49,12 @@ library(dynlm)
 library(ggplot2)
 library(tseries)
 library(MTS)
+library(stargazer)
 ```
 
 ## Data
 
-US Customs and Border Protection (CBP), the parent agency of the Border Patrol, reports its
-historical data on a monthly basis (Figure 2). This data is made available on the CBP web site in the form of a pdf file (Figure 3). The currently available report covers the period of 2000 through 2019. Processing this data will present a bit of a challenge as it will need to be scraped from the pdf, reformatted, and cleaned. In addition, other sources of relevant data will be explored. For example, the Federal Reserve Economic Date (FRED) site provided by the Federal Reserve Bank of St. Louis, makes available a large number of economic data for many countries. This data will be incorporated into the analysis as appropriate.
+US Customs and Border Protection (CBP), the parent agency of the Border Patrol, reports its historical data on a monthly basis (Figure 2). This data is made available on the CBP web site in the form of a pdf file (Figure 3). The currently available report covers the period of 2000 through 2019. Processing this data will present a bit of a challenge as it will need to be scraped from the pdf, reformatted, and cleaned. In addition, other sources of relevant data will be explored. For example, the Federal Reserve Economic Date (FRED) site provided by the Federal Reserve Bank of St. Louis, makes available a large number of economic data for many countries. This data will be incorporated into the analysis as appropriate.
 
 ![Figure 2: Southwest Border Encounters (Source: CBP)](plots/Figure%202.png)
 
@@ -98,7 +94,9 @@ data_prepared_tbl <- t1
 
 The first step in the EDA was to examine the first and last rows of the combined data frame to check for consistency and errors.
 
-A plot of the time series shows wide variations and seasonal swings in the early years followed by a relatively flat period, followed by a severe spike. The decomposition shows a downward trend followed by a relatively flat period, followed by a slight increase. The is clearly a seasonal component, however the amplitude of the seasonal swings decreases over time. Finally, the noise component appears to be relatively random with the exception of a couple spikes that correspond to irregular periods in the series. The ADF test, executed last week, indicates that we cannot reject the null hypothesis that the series is stationary. Therefore, no transformations were performed on the data. In addition, an ARIMA model (using auto.arima) fit an ARIMA(1,0,2)(2,1,0)[12] model. Since the non-seasonal differencing is 0, this confirms the ADF test results.
+A plot of the time series shows wide variations and seasonal swings in the early years followed by a relatively flat period, followed by a severe spike. The decomposition shows a downward trend followed by a relatively flat period, followed by a slight increase. The is clearly a seasonal component, however the amplitude of the seasonal swings decreases over time. Finally, the noise component appears to be relatively random with the exception of a couple spikes that correspond to irregular periods in the series. The ADF test, indicates that we cannot reject the null hypothesis that the series is stationary. Therefore, no transformations were performed on the data. In addition, an ARIMA model (using auto.arima) fit an ARIMA(1,0,2)(2,1,0)[12] model. Since the non-seasonal differencing is 0, this confirms the ADF test results.
+
+The autocorrelation and partial autocorrelation plots show significant correlation with lagged values.
 
 ```{r}
 kable(head(t1))
@@ -260,18 +258,6 @@ model_fit_nn <- nnetar_reg() %>%
     set_engine(engine = "nnetar") %>%
     fit((value) ~ date, data = training(splits))
 
-# model_spec_mars <- mars(mode = "regression") %>%
-#     set_engine("earth")
-# recipe_spec <- recipe(value ~ date, data = training(splits)) %>%
-#     step_date(date, features = "month", ordinal = FALSE) %>%
-#     step_mutate(date_num = as.numeric(date)) %>%
-#     step_normalize(date_num) %>%
-#     step_rm(date)
-# wflw_fit_mars <- workflow() %>%
-#     add_recipe(recipe_spec) %>%
-#     add_model(model_spec_mars) %>%
-#     fit(training(splits))
-
 model_fit_ets <- exp_smoothing(
         seasonal_period  = 12,
         error            = "multiplicative",
@@ -281,8 +267,6 @@ model_fit_ets <- exp_smoothing(
     set_engine("ets") %>%
     fit((value) ~ date, data = training(splits))
 
-
-
 ```
 
 In addition to tidyverse and parsnip, I also used Modeltime, a library that extends tidymodels specifically for time series analysis and forecasting. For example, Modeltime provides a data structure that can be used to hold the results of the models created above. This data structure is then used to support forecasting and accuracy analysis.
@@ -291,17 +275,14 @@ In addition to tidyverse and parsnip, I also used Modeltime, a library that exte
 # * Modeltime Table ----
 model_tbl <- modeltime_table(
     model_fit_arima,
-    #model_fit_lm,
     model_fit_lm_no_trend,
     model_fit_prophet,
     model_fit_rf,
     model_fit_xgboost,
     model_fit_svm_poly,
-    #model_fit_svm_rbf,
     model_fit_prophet_boost,
     model_fit_arima_boost,
     model_fit_nn,
-    #wflw_fit_mars,
     model_fit_ets
 )
 
@@ -411,11 +392,8 @@ allPred <- forecast_tbl %>%
 Y20Actuals <- read_csv("C:/Users/JJT/Desktop/Y20Actuals.csv")
 allValues <- rbind(allPred, Y20Actuals)
 allValues.cast <- dcast(allValues, .index ~ .model_desc, mean)
-#allValues.cast <- dcast(allValues, .index ~ .model_id, mean)
-#allValues.cast.tsb <- as_tsibble(allValues.cast)
 
 actual.ts <- ts(allValues.cast$ACTUAL, start=c(2020, 1), frequency=12)
-#earth.ts <- ts(allValues.cast$EARTH, start=c(2020, 1), frequency=12)
 etsmnm.ts <- ts(allValues.cast$`ETS(M,N,M)`, start=c(2020, 1), frequency=12)
 kernlab.ts <- ts(allValues.cast$KERNLAB, start=c(2020, 1), frequency=12)
 lm.ts <- ts(allValues.cast$LM, start=c(2020, 1), frequency=12)
@@ -440,6 +418,10 @@ autoplot(all2020Preds) +
 ```
 
 ```{r message = FALSE, warning = FALSE, include = FALSE}
+
+## Created a yardstick metrics set to pull out the metrics of interest.
+## Created a function to get the metrics from each model
+## Extracted and formated results into metrics table
 
 combined_metrics_set <- metric_set(mape, rmse, mase, mae, rsq)
 
@@ -486,7 +468,7 @@ row.names(all_metrics.tib) <- c("Actual",  "ETS" , "Kernlab", "LM",
 
 ```{r}
 
-kable(round(all_metrics.tib, 2))
+kable(round(all_metrics.tib, 2), type="text")
 
 ```
 
@@ -564,26 +546,26 @@ autoplot(combined.ts) +
 
 # Exploratory Data Analysis
 
-For exploratory data analysis, we first look at the cross correlation plots of each of the economic series versus the border encounters. We also calculate the ADF statistics for each of the series to examine stationarity. Finally, we determine the number of differences that might be used to make the series stationary.
+For exploratory data analysis, we first look at the correlations among the different series. The most significantly correlated series with the SW Border encounters is US Housing Starts. This will be the focus of the analysis going forward.
+
+The cross correlation plot housing starts with the border encounters again shows the correlation to specific lags indicating the housing starts may be both a leading and a lagging indicator. We also calculate the ADF statistic to examine stationarity. Finally, we determine the number of differences that might be used to make the series stationary.
+
+```{r}
+stargazer(cor(combined.ts), type="text")
+```
 
 ```{r }
 ccf(combined.ts[,1], combined.ts[,3],main="CCF Housing Starts")
-ccf(combined.ts[,1], combined.ts[,2],main="CCF GDP")
-ccf(combined.ts[,1], combined.ts[,4],main="CCF Unemployment")
-
 ## ADF Tests:  Null hypothesis--Not stationary.  p-value <0.5 reject Null
 
-adf.test(combined.ts[,1])
-adf.test(combined.ts[,2])
 adf.test(combined.ts[,3])
-adf.test(combined.ts[,4])
 
 ndiffs((combined.ts[,1]))
-ndiffs((combined.ts[,2]))
 ndiffs((combined.ts[,3]))
-ndiffs((combined.ts[,4]))
 
 ```
+
+As with the univariate series, the data is split into training and testing sets. For this analysis, the testing set contains the last two years of data.
 
 ```{r message = FALSE, warning = FALSE, include = FALSE}
 ## Split data set
@@ -598,14 +580,29 @@ y=combined.ts[,3]
 ndiffs(x, test="kpss")
 ndiffs(y, test="kpss")
 
+
+```
+
+```{r}
 Granger <- cbind(y,x)
 dGranger <- diff(Granger)
 
-lag=VARselect(dGranger, lag.max=12)
+lag=VARselect(dGranger, lag.max=13)
 lag$selection
+```
+
+## Multivariate Results
+
+Using AIC as the lag selection metric, we us the VARS package to create a vector autoregression model. The results displayed below show the results for both models: one to predict x and one to predict y. For the y model it appears that the only significant lags are lags of y itself. The same is true for the x model, as well.
+
+The portmanteau test is used to determine the presence of multivariate autocorrelation. From the results of the test the null hypothesis is rejected (p\<=0.05). That is, autocorrelations are not zero.
+
+However, the Granger causality tests provide additional relevant information here. According the the Granger tests, neither series can be said to statistically "cause" the other at a p\<= 0.05. Threshold. However, the p-values for both tests are relatively close to 0.10. We might therefore be able to conclude that there is Granger causality if we relax the threshold value for p.
+
+```{r}
 
 lag12 <- vars::VAR(dGranger, p=12)
-#summary(lag12)
+summary(lag12)
 
 serial.test(lag12, type="PT.asymptotic")
 ## Reject null:  Residuals are not correlated
@@ -616,66 +613,26 @@ y2x <- causality(lag12, cause="y")
 x2y$Granger
 y2x$Granger
 
+
+```
+
+The last step is to use the vector autoregression model to product a forecast of future periods. The predict function provides a point forecast, in this case, for the next 24 months with confidence intervals of 0.95. Since the values are scaled and centered, we will need to "unscale" them for forecasting purposes.
+
+```{r message = FALSE, warning = FALSE, include = FALSE}
 predict(lag12, n.ahead=24, ci=0.95)
-
-plot(forecast(lag12))
-
-
-bv.cusum <- stability(lag12, type = "OLS-CUSUM")
-plot(bv.cusum)
 
 
 ```
 
 ```{r}
-#plot(combined.ts)
 
-#autoplot(combined.ts) +
-#  ggtitle("Time Series Plot of the `EuStockMarkets' Time-Series") +
-#  theme(plot.title = element_text(hjust = 0.5))
+plot(forecast(lag12))
 
-apply(combined.ts, 2, adf.test)
-
-stnry = diffM(combined.ts) #difference operation on a vector of time series. Default order of differencing is 1.
-
-plot.ts(stnry)
-
-VARselect(stnry, 
-          type = "none", #type of deterministic regressors to include. We use none becasue the time series was made stationary using differencing above. 
-          lag.max = 12)
-
-var.a <- vars::VAR(stnry,
-                   lag.max = 10, #highest lag order for lag length selection according to the choosen ic
-                   ic = "AIC", #information criterion
-                   type = "none") #type of deterministic regressors to include
-summary(var.a)
-
-serial.test(var.a)
-```
-
-```{r message = FALSE, warning = FALSE}
-causality(var.a, #VAR model
-          cause = c("housing.scaled.ts"))
-
-fcast = predict(var.a, n.ahead = 12) # we forecast over a short horizon because beyond short horizon prediction becomes unreliable or uniform
-par(mar = c(2.5,2.5,2.5,2.5))
-plot(fcast)
-
-swb.unscaled <- swb.scaled.ts * attr(swb.scaled.ts, 'scaled:scale') + attr(swb.scaled.ts, 'scaled:center')
-#plot(swb.unscaled)
-
-swb.forecast <- fcast$fcst$swb.scaled.ts[,1]
-
-swb.forecast.unscaled <- swb.forecast* attr(swb.scaled.ts, 'scaled:scale') + attr(swb.scaled.ts, 'scaled:center')
-
-swb.combined.ts <- ts(c(swb.unscaled, swb.forecast.unscaled), start=c(2000,1), frequency=12)
-
-autoplot(swb.combined.ts)
 ```
 
 # Conclusions and Next Steps
 
-# References 
+# References
 
 Bali, R., D. Sarkar, B. Lantz, and C. Lesmeister. *R: Unleash Machine Learning Techniques*. Learning Path. Packt Publishing, 2016. <https://books.google.com/books?id=3ZfcDgAAQBAJ>.
 
