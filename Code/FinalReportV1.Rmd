@@ -15,7 +15,7 @@ output:
 
 # Introduction
 
-The US-Mexico border is one of the longest and busiest in the world (Figure 1). According to the US Bureau of Transportation Statistics, in 2018, 500,000 people and \$1.7 billion worth of goods crossed the nearly 2,000-mile border every day. Mexico is the United States' third-biggest trading partner behind Canada and China; US consumers and manufacturers are also heavily reliant upon the dozens of road and rail networks that connect the two countries along the border. Consumers and manufacturers are thus concerned when surges of migrants from Central America causes disruptions to the movement of people and goods across the US-Mexico border.
+The US-Mexico border is one of the longest and busiest in the world (Figure 1). According to the US Bureau of Transportation Statistics, in 2018, 500,000 people and $1.7 billion worth of goods crossed the nearly 2,000-mile border every day. Mexico is the United States' third-biggest trading partner behind Canada and China; US consumers and manufacturers are also heavily reliant upon the dozens of road and rail networks that connect the two countries along the border. Consumers and manufacturers are thus concerned when surges of migrants from Central America causes disruptions to the movement of people and goods across the US-Mexico border.
 
 ![Figure 1: US-Mexico Border](plots/Figure1.jpg)
 
@@ -631,6 +631,16 @@ plot(forecast(lag12))
 ```
 
 # Conclusions and Next Steps
+
+The situation on the US-Mexico border is dynamic and complex. The number of people who attempt to cross the border illegally in determined by a number of social, political, and economic factors both in the US and in the home country of the migrants. As the above analysis shows, univariate time series analysis, using both statistical and machine learning approaches are not able to adequately anticipate large, previously unseen swings in the number of encounters. We see this first in January 2017. Immediately follow President Trump's inauguration, border encounters declined significantly. This may have been a result of political rhetoric at the time or some other indeterminate factor. Similarly, the models were unable to accurately account for a significant upswing in encounters in the middle of 2019. While it is not completely clear, this increase may have been a result of changes to the US immigration policies.
+
+None of this is particularly surprising given that time series modeling and forecasting relies heavily on the relationship between on period and the periods that came before. Seasonality and trends are somewhat predictable. Large changes resulting from external factors are not.
+
+Multivariate analysis provides another approach whereby data from other time series can be incorporated into the modeling. This analysis illustrated a possible approach to the by examining US Gross Domestic Product, US Housing Starts, and US Unemployment. Preliminary analysis suggests that there is a moderately strong correlation between housing starts and border encounters. This makes a certain amount of sense if migrants are crossing into the US in search of employment, in particular, in the construction trades.
+
+Using a vector autoregression approach, border encounters and housing starts were modeling together as endogenous variables. The Granger causality metric was used to evaluate whether one series statistically "caused" the other. Primarily used in econometrics, a time series *X* is said to Granger-cause *Y* if it can be shown, usually through a series of statistical tests on lagged values of *X* (and with lagged values of *Y* also included), that those *X* values provide statistically significant information about future values of *Y*. The null hypothesis is that there is no Granger causality. For the two series modeled, the p-value for testing whether housing starts Granger-cause border encounters was 0.13. This is below the typical threshold value of 0.05, but is close enough that further testing and analysis could be warranted.
+
+Next steps for this analysis would be to continue with multivariate analysis and examining other time series data as well as perhaps adding categorical exogenous variable to represent factors such as Presidential administration or particular immigration policy. In addition, further work should be performed to apply deep learning techniques to the multivariate analysis.
 
 # References
 
