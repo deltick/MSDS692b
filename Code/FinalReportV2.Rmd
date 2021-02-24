@@ -4,10 +4,10 @@ author: "John Tamer"
 date: "2/21/2021"
 always_allow_html: yes
 output:
-  word_document: default
-  github_document: default
   html_document:
     df_print: paged
+  github_document: default
+  word_document: default
   pdf_document: default
 ---
 
@@ -17,7 +17,7 @@ output:
 
 The US-Mexico border is one of the longest and busiest in the world (Figure 1). According to the US Bureau of Transportation Statistics, in 2018, 500,000 people and $1.7 billion worth of goods crossed the nearly 2,000-mile border every day. Mexico is the United States' third-biggest trading partner behind Canada and China; US consumers and manufacturers are also heavily reliant upon the dozens of road and rail networks that connect the two countries along the border. Consumers and manufacturers are thus concerned when surges of migrants from Central America causes disruptions to the movement of people and goods across the US-Mexico border.
 
-![Figure 1: US-Mexico Border](plots/Figure1.jpg)
+![Figure 1: US-Mexico Border](images/Figure1-01.jpg)
 
 The US Border Patrol has a seemingly straightforward mission: Secure the US borders between ports of entry. However, th length and diversity of the Southwest border, in particular, makes this a difficult if not impossible task. In addition, the nature of immigration along the southern US border has changed over the course of the last 20 years. According the Stratfor (2021), in 2000, Mexican nationals accounted for 98% of apprehensions along the US-Mexico border. Since 2000, encounters with Mexican nationals have been declining, while encounters with nationals from Guatemala, Honduras and El Salvador have been increasing. The reasons for these increases, referred to as push and pull factors, are diverse. According to Stratfor, "poverty, crime, and corruption already provided Guatemalans, Hondurans, and Salvadorans plenty of incentives to emigrate before 2020, as evidenced by the years-long upward trend in apprehensions of Northern Triangle nationals along the US-Mexico border" (2021). Add to that the economic impact of the COVID-19 pandemic, back-to-back major hurricanes in November of 2020, and worsening living conditions in the Northern Triangle, especially for the poorer, marginalized segments of society. Whatever the reasons, the problems at the Southwest border will not soon subside due to changes in immigration policy or the construction of a border wall. Unfortunately, the US Border Patrol constantly finds itself in a reactive posture, attempting to adjust resources and deployments based on what has already happened.
 
@@ -56,9 +56,9 @@ library(stargazer)
 
 US Customs and Border Protection (CBP), the parent agency of the Border Patrol, reports its historical data on a monthly basis (Figure 2). This data is made available on the CBP web site in the form of a pdf file (Figure 3). The currently available report covers the period of 2000 through 2019. Processing this data will present a bit of a challenge as it will need to be scraped from the pdf, reformatted, and cleaned. In addition, other sources of relevant data will be explored. For example, the Federal Reserve Economic Date (FRED) site provided by the Federal Reserve Bank of St. Louis, makes available a large number of economic data for many countries. This data will be incorporated into the analysis as appropriate.
 
-![Figure 2: Southwest Border Encounters (Source: CBP)](plots/Figure%202.png)
+![Figure 2: Southwest Border Encounters (Source: CBP)](images/Figure%202.png)
 
-![Figure 3: Annual Border Patrol Statistics (Source: USBP)](plots/Figure3.png)
+![Figure 3: Annual Border Patrol Statistics (Source: USBP)](images/Figure3.png)
 
 The data for this analysis was scraped from the PDF using the tabulizer library. There were a number of slight difference between the years, so the data also required several cleaning and reformatting steps before it could be used. These included:
 
