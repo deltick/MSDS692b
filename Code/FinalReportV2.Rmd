@@ -4,10 +4,10 @@ author: "John Tamer"
 date: "2/21/2021"
 always_allow_html: yes
 output:
-  html_document:
-    df_print: paged
   github_document: default
   word_document: default
+  html_document:
+    df_print: paged
   pdf_document: default
 ---
 
