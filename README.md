@@ -1,4 +1,4 @@
 # MSDS692b
 
-https://github.com/deltick/MSDS692b/blob/main/Docs/FinalReport.html
+https://github.com/deltick/MSDS692b/main/Docs/FinalReport.html
 
