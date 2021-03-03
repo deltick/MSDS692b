@@ -8,3 +8,5 @@ https://github.com/deltick/MSDS692b/Docs/FinalReport.html
 
 https://github.com/deltick/MSDS692b/blob/main/Docs/FinalReport.html
 
+(https://deltick.github.io/MSDS692b/FinalReport.html)
+
